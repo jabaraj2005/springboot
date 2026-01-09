@@ -9,7 +9,7 @@ pipeline {
 
     environment {
         IMAGE_NAME      = "springboot-ci-cd"
-        CONTAINER_COUNT = 100
+        CONTAINER_COUNT = 10
     }
 
     triggers {
