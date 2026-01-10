@@ -9,7 +9,7 @@ pipeline {
 
     environment {
         IMAGE_NAME      = "springboot-ci-cd"
-        CONTAINER_COUNT = 10
+        CONTAINER_COUNT = 1
     }
 
     triggers {
@@ -50,7 +50,7 @@ pipeline {
                 do
                   docker run -d \
                     --name ${IMAGE_NAME}_$i \
-                    -p $((9000 + i)):9090 \
+                    -p 9090:9090 \
                     ${IMAGE_NAME}:${BUILD_NUMBER}
                 done
                 '''
