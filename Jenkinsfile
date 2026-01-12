@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven 3.9.6'
-    }
-
     environment {
         IMAGE_NAME      = "springboot-ci-cd"
         CONTAINER_COUNT = 1
