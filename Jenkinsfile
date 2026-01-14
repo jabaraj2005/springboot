@@ -1,7 +1,7 @@
 pipeline {
     agent {
-          label:slave
-   }
+        label 'slave'
+    }
 
     environment {
         IMAGE_NAME      = "springboot-ci-cd"
@@ -23,8 +23,8 @@ pipeline {
         stage('Maven Build') {
             steps {
                 sh '''
-                mvn -version
-                mvn clean package -DskipTests
+                    mvn -version
+                    mvn clean package -DskipTests
                 '''
             }
         }
@@ -32,23 +32,20 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
+                    docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
                 '''
             }
         }
 
-        stage('Deploy Multiple Containers') {
+        stage('Deploy Container') {
             steps {
                 sh '''
-                docker rm -f $(docker ps -aq --filter "name=${IMAGE_NAME}_") 2>/dev/null || true
+                    docker rm -f ${IMAGE_NAME}_1 2>/dev/null || true
 
-                for i in $(seq 1 ${CONTAINER_COUNT})
-                do
-                  docker run -d \
-                    --name ${IMAGE_NAME}_$i \
-                    -p 9090:9090 \
-                    ${IMAGE_NAME}:${BUILD_NUMBER}
-                done
+                    docker run -d \
+                      --name ${IMAGE_NAME}_1 \
+                      -p 9090:9090 \
+                      ${IMAGE_NAME}:${BUILD_NUMBER}
                 '''
             }
         }
@@ -56,10 +53,12 @@ pipeline {
 
     post {
         success {
-            echo "✅ Pipeline executed successfully on Ubuntu agent-vikram"
+            echo "✅ Pipeline executed successfully"
         }
         failure {
-            echo "❌ Pipeline failed on agent-vikram"
+            echo "❌ Pipeline failed"
         }
     }
 }
+
+
