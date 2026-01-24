@@ -4,8 +4,8 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME      = "springboot-ci-cd"
-        CONTAINER_COUNT = 1
+        IMAGE_NAME = "dockerhub-username/springboot-ci-cd"
+        DOCKER_CREDS = credentials('dockerhub-creds')
     }
 
     triggers {
@@ -23,29 +23,43 @@ pipeline {
         stage('Maven Build') {
             steps {
                 sh '''
-                    mvn -version
                     mvn clean package -DskipTests
                 '''
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Docker Build') {
             steps {
                 sh '''
-                    docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
+                    docker build -t $IMAGE_NAME:latest .
+                    docker tag $IMAGE_NAME:latest $IMAGE_NAME:${BUILD_NUMBER}
                 '''
             }
         }
 
-        stage('Deploy Container') {
+        stage('Docker Login') {
             steps {
                 sh '''
-                    docker rm -f ${IMAGE_NAME}_1 2>/dev/null || true
+                    echo $DOCKER_CREDS_PSW | docker login -u $DOCKER_CREDS_USR --password-stdin
+                '''
+            }
+        }
 
-                    docker run -d \
-                      --name ${IMAGE_NAME}_1 \
-                      -p 9090:9090 \
-                      ${IMAGE_NAME}:${BUILD_NUMBER}
+        stage('Docker Push') {
+            steps {
+                sh '''
+                    docker push $IMAGE_NAME:latest
+                    docker push $IMAGE_NAME:${BUILD_NUMBER}
+                '''
+            }
+        }
+
+        stage('Deploy using Docker Compose') {
+            steps {
+                sh '''
+                    docker compose down || true
+                    docker compose pull
+                    docker compose up -d
                 '''
             }
         }
@@ -53,12 +67,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Pipeline executed successfully"
+            echo "✅ CI/CD completed successfully"
         }
         failure {
             echo "❌ Pipeline failed"
         }
     }
 }
-
-
