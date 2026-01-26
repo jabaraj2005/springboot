@@ -1,171 +1,136 @@
-# spring-boot-CI-CD
-Automated CI/CD pipeline for Spring Boot leveraging Jenkins, Maven, Docker, and GitHub Webhooks with large-scale container deployment using Docker Compose. 
-Here’s a **professional, GitHub-ready README.md** for your project:
+# 🚀 Spring Boot CI/CD Pipeline using Jenkins, Docker & Docker Compose
+
+This project demonstrates a complete CI/CD pipeline for a Spring Boot application using Jenkins, Docker, Docker Hub, and Docker Compose. The pipeline automatically builds, containerizes, pushes, and deploys the application whenever code is pushed to GitHub.
 
 ---
 
-# 🚀 Automated CI/CD Pipeline for Spring Boot
+## 🧰 Tech Stack
 
-## 📌 Project Overview
-
-This project demonstrates an **end-to-end automated CI/CD pipeline** for a **Spring Boot application** using **Jenkins, Maven, Docker, GitHub Webhooks, and Docker Compose**.
-The pipeline automates code build, testing, containerization, and large-scale container deployment with minimal manual intervention.
-
----
-
-## 🛠️ Tech Stack
-
-* **Backend:** Spring Boot (Java)
-* **Build Tool:** Maven
-* **CI/CD Tool:** Jenkins
-* **Containerization:** Docker
-* **Container Orchestration:** Docker Compose
-* **Version Control:** Git & GitHub
-* **Automation Trigger:** GitHub Webhooks
-
----
-
-## 🔄 CI/CD Pipeline Workflow
-
-1. **Code Commit**
-
-   * Developer pushes code to GitHub repository.
-
-2. **Webhook Trigger**
-
-   * GitHub Webhook automatically triggers Jenkins pipeline.
-
-3. **Build & Test**
-
-   * Jenkins pulls the latest code.
-   * Maven compiles the project and runs unit tests.
-
-4. **Docker Image Creation**
-
-   * Application is packaged as a JAR.
-   * Docker image is built using a Dockerfile.
-
-5. **Container Deployment**
-
-   * Docker Compose deploys and manages multiple containers.
-   * Supports scalable container deployment.
-
-6. **Application Availability**
-
-   * Spring Boot application is accessible through exposed ports.
+* Backend: Spring Boot (Java 21)
+* Build Tool: Maven
+* CI/CD: Jenkins (Declarative Pipeline)
+* Containerization: Docker
+* Container Orchestration: Docker Compose
+* Image Registry: Docker Hub
+* Version Control: GitHub
 
 ---
 
 ## 📂 Project Structure
 
 ```
-springboot-ci-cd/
-│── src/
-│   └── main/java/
-│   └── test/java/
-│
-│── Dockerfile
-│── docker-compose.yml
-│── Jenkinsfile
-│── pom.xml
-│── README.md
+.
+├── src/                    # Spring Boot source code
+├── target/                 # Maven build output (JAR)
+├── Dockerfile              # Docker image definition
+├── docker-compose.yml      # Container deployment configuration
+├── Jenkinsfile             # CI/CD pipeline definition
+├── pom.xml                 # Maven configuration
+└── README.md               # Project documentation
 ```
 
 ---
 
-## ⚙️ Prerequisites
+## 🔄 CI/CD Workflow
 
-Ensure the following are installed:
+1. Developer pushes code to GitHub
+2. GitHub Webhook triggers Jenkins pipeline
+3. Jenkins stages:
 
-* Java 17+
-* Maven
-* Docker & Docker Compose
-* Jenkins
-* Git
-
----
-
-## 🧩 Jenkins Pipeline Configuration
-
-The Jenkins pipeline performs:
-
-* Source code checkout from GitHub
-* Maven build and test
-* Docker image build
-* Deployment using Docker Compose
-
-Sample pipeline stages:
-
-* **Checkout**
-* **Build**
-* **Test**
-* **Docker Build**
-* **Docker Compose Deploy**
+   * Checkout source code
+   * Build Spring Boot JAR using Maven
+   * Build Docker image
+   * Login to Docker Hub using access token
+   * Push image to Docker Hub
+   * Deploy application using Docker Compose
+4. Application runs automatically in a Docker container
 
 ---
 
-## 🐳 Docker & Docker Compose
+## 🐳 Dockerfile
 
-* **Dockerfile** packages the Spring Boot application into a lightweight container.
-* **Docker Compose** enables:
+The Dockerfile is optimized for CI/CD and does **not** contain any credentials.
 
-  * Multi-container deployment
-  * Easy scaling
-  * Simplified service management
+```dockerfile
+FROM eclipse-temurin:21-jdk-alpine
+WORKDIR /app
+COPY target/*.jar app.jar
+EXPOSE 9090
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
 
-Example:
+---
+
+## 📦 Docker Compose
+
+Docker Compose is used to pull the latest image from Docker Hub and run the container.
+
+```yaml
+version: "3.8"
+
+services:
+  springboot-app:
+    image: dockerhub-username/springboot-ci-cd:latest
+    container_name: springboot-ci-cd
+    ports:
+      - "9090:9090"
+    restart: always
+```
+
+---
+
+## 🔐 Credentials Management
+
+* Docker Hub credentials are stored securely in Jenkins Credentials Manager
+* Authentication is done using a Docker Hub Access Token
+* No secrets are stored in the repository
+
+---
+
+## ▶️ How to Run Locally (Optional)
 
 ```bash
-docker-compose up -d --scale app=3
+mvn clean package
+
+docker build -t springboot-ci-cd .
+
+docker compose up -d
+```
+
+Access the application:
+
+```
+http://localhost:9090
 ```
 
 ---
 
-## 🔔 GitHub Webhook Setup
-
-1. Go to **GitHub Repository → Settings → Webhooks**
-2. Add Jenkins webhook URL:
-
-   ```
-   http://<jenkins-server>:8080/github-webhook/
-   ```
-3. Select **Push events**
-4. Save webhook
-
----
-
-## 📈 Key Features
+## 🧠 Key Highlights
 
 * Fully automated CI/CD pipeline
-* Zero manual deployment
-* Scalable container-based architecture
-* Faster release cycles
-* Reliable and repeatable deployments
+* Secure credential handling
+* Docker best practices followed
+* Production-style deployment using Docker Compose
+* Interview-ready DevOps project
 
 ---
 
-## ✅ Use Cases
+## 📌 Future Enhancements
 
-* DevOps learning and practice
-* Enterprise-grade CI/CD implementation
-* Microservices and container-based deployments
-* Continuous delivery environments
-
----
-
-## 🧪 Future Enhancements
-
-* Kubernetes deployment
-* Blue-Green or Canary deployment
-* Integration with SonarQube
-* Monitoring with Prometheus & Grafana
+* Push images with version tags
+* Blue-Green deployment
+* Deploy on AWS EC2
+* Add monitoring (Prometheus + Grafana)
 
 ---
 
-## 👨‍💻 Author
+## 👤 Author
 
-**Jabaraj**
-📌 GitHub: [https://github.com/jabaraj2005](https://github.com/jabaraj2005)
-📌 LinkedIn: [https://www.linkedin.com/in/jaba-raj-v-1b92a6252](https://www.linkedin.com/in/jaba-raj-v-1b92a6252)
+Jaba Raj V
+DevOps & Cloud Enthusiast
+
+---
+
+⭐ If you like this project, don’t forget to star the repository!
 
 
