@@ -1,6 +1,6 @@
 services:
   springboot-app:
-    image: dockerhub-username/springboot-ci-cd:latest
+    image: jabaraj2005/springboot-ci-cd
     container_name: springboot-ci-cd
     ports:
       - "9090:9090"
