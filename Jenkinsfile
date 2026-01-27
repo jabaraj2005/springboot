@@ -1,11 +1,8 @@
 pipeline {
-    agent {
-        label 'AgentA'
-    }
+    agent any
 
     environment {
-        IMAGE_NAME = "dockerhub-username/springboot-ci-cd"
-        DOCKER_CREDS = credentials('dockerhub-creds')
+        IMAGE_NAME = "jabaraj2005/springboot-ci-cd"
     }
 
     triggers {
@@ -28,7 +25,7 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
+        stage('Build Docker Image') {
             steps {
                 sh '''
                     docker build -t $IMAGE_NAME:latest .
@@ -39,9 +36,15 @@ pipeline {
 
         stage('Docker Login') {
             steps {
-                sh '''
-                    echo $DOCKER_CREDS_PSW | docker login -u $DOCKER_CREDS_USR --password-stdin
-                '''
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    '''
+                }
             }
         }
 
@@ -57,8 +60,7 @@ pipeline {
         stage('Deploy using Docker Compose') {
             steps {
                 sh '''
-                    docker compose down || true
-                    docker compose pull
+                    docker compose down
                     docker compose up -d
                 '''
             }
@@ -67,10 +69,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ CI/CD completed successfully"
+            echo "Pipeline completed successfully"
         }
         failure {
-            echo "❌ Pipeline failed"
+            echo "Pipeline failed"
         }
     }
 }
