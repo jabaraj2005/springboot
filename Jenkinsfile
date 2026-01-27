@@ -3,76 +3,51 @@ pipeline {
 
     environment {
         IMAGE_NAME = "jabaraj2005/springboot-ci-cd"
-    }
-
-    triggers {
-        githubPush()
+        DOCKERHUB_CREDENTIALS = "dockerhub" // Jenkins credentials ID
     }
 
     stages {
-
         stage('Checkout Code') {
             steps {
-                checkout scm
+                git branch: 'main', url: 'https://github.com/jabaraj2005/springboot.git'
             }
         }
 
         stage('Maven Build') {
             steps {
-                bat '''
-                    mvn clean package -DskipTests
-                '''
+                sh 'mvn clean package -DskipTests'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat '''
-                    docker build -t %IMAGE_NAME%:latest .
-                    docker tag %IMAGE_NAME%:latest %IMAGE_NAME%:%BUILD_NUMBER%
-                '''
+                sh "docker build -t ${IMAGE_NAME}:latest ."
             }
         }
 
         stage('Docker Login') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    bat '''
-                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
-                    '''
+                withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDENTIALS}", 
+                                                  usernameVariable: 'DOCKER_USER', 
+                                                  passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                 }
             }
         }
 
-        stage('Docker Push') {
+        stage('Push Docker Image') {
             steps {
-                bat '''
-                    docker push %IMAGE_NAME%:latest
-                    docker push %IMAGE_NAME%:%BUILD_NUMBER%
-                '''
-            }
-        }
-
-        stage('Deploy using Docker Compose') {
-            steps {
-                bat '''
-                    docker compose down
-                    docker compose up -d
-                '''
+                sh "docker push ${IMAGE_NAME}:latest"
             }
         }
     }
 
     post {
         success {
-            echo " Pipeline completed successfully"
+            echo "✅ Pipeline completed successfully!"
         }
         failure {
-            echo " Pipeline failed"
+            echo "❌ Pipeline failed!"
         }
     }
 }
